@@ -15,9 +15,7 @@ export const DEFAULT_SETTING: object = {
 		enable: true,
 		blog_url: "",
 		username: "",
-		password: "",
-		location_posts: "",
-		throttling_mode: true
+		password: ""
 	},
 	base: {
 		// 需要同步的文章目录, 默认是所有文章, 路径/子路径
@@ -29,14 +27,16 @@ export const DEFAULT_SETTING: object = {
 
 export class SettingManager {
 	// 所有插件配置的集合
-	private static CACHE_SETTING : { [vendor: string]: { [key: string]: any } } ;
+	private static CACHE_SETTING: any = {};
 
 	/**
 	 * 加载所有对接厂商的配置
 	 * @param data
 	 */
-	public static loadSettings(data: any): void {
-		Object.assign(this.CACHE_SETTING, DEFAULT_SETTING, data)
+	public static loadSettings(data: Promise<any>): void {
+		data.then((result) => {
+			this.CACHE_SETTING = Object.assign({}, DEFAULT_SETTING, result)
+		})
 	}
 
 	/**
@@ -49,8 +49,7 @@ export class SettingManager {
 		if (setting && typeof setting === 'object' && key in setting) {
 			return (setting as any)[key];
 		}
-		return null;
-
+		return undefined;
 	}
 
 	/**
@@ -59,15 +58,14 @@ export class SettingManager {
 	 * @param key
 	 * @param value
 	 */
-	public static async saveSetting(vendor: VendorType, key: string, value: any): Promise<void> {
-		const setting = this.postBridgePluginSettingMap.get(vendor);
+	public static async saveSetting(vendor: string, key: string, value: any): Promise<void> {
+		const setting = this.CACHE_SETTING[vendor];
 		if (setting && typeof setting === 'object' && key in setting) {
 			(setting as any)[key] = value;
-		}else {
+		} else {
 			throw new Error(`Setting ${key} not found in vendor ${vendor}`);
 		}
-		debugger
-		await PostBridgePlugin.getInstance().saveData(this.postBridgePluginSettingMap);
+		await PostBridgePlugin.getInstance().saveData(this.CACHE_SETTING);
 	}
 
 }

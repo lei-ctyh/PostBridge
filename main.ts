@@ -17,6 +17,7 @@ export default class PostBridgePlugin extends Plugin {
 	 */
 	private initPlugin() {
 		PostBridgePlugin.instance = this;
+		debugger
 		SettingManager.loadSettings(this.loadData())
 		this.addSettingTab(new PbSettingTab(this.app, this));
 	}

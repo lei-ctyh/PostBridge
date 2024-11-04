@@ -1,6 +1,6 @@
 import {App, PluginSettingTab, Setting, TFolder} from "obsidian";
 import PostBridgePlugin from "../../main";
-import {SettingManager, VendorType} from "./setting-manager";
+import {SettingManager} from "./setting-manager";
 
 export class PbSettingTab extends PluginSettingTab {
 	private plugin: PostBridgePlugin;
@@ -18,9 +18,9 @@ export class PbSettingTab extends PluginSettingTab {
 			.setDesc('博客园MetaWeblog访问地址')
 			.addText(text => text
 				.setPlaceholder('MetaWeblog访问地址')
-				.setValue(SettingManager.getSetting(VendorType.CNBLOG, 'blog_url'))
+				.setValue(SettingManager.getSetting('cnblog', 'blog_url'))
 				.onChange(async (value) => {
-					await SettingManager.saveSetting(VendorType.CNBLOG, 'blog_url', value);
+					await SettingManager.saveSetting('cnblog', 'blog_url', value);
 				}));
 		new Setting(contentEl)
 			.setName('username')
