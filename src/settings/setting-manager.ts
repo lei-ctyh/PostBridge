@@ -29,14 +29,16 @@ export const DEFAULT_SETTING: object = {
 
 export class SettingManager {
 	// 所有插件配置的集合
-	private static CACHE_SETTING : { [vendor: string]: { [key: string]: any } } ;
+	private static CACHE_SETTING : any = {} ;
 
 	/**
 	 * 加载所有对接厂商的配置
 	 * @param data
 	 */
-	public static loadSettings(data: any): void {
-		Object.assign(this.CACHE_SETTING, DEFAULT_SETTING, data)
+	public static loadSettings(data: Promise<any>): void {
+		data.then(async (settings: any) => {
+			this.CACHE_SETTING = Object.assign({}, DEFAULT_SETTING, settings)
+		})
 	}
 
 	/**
@@ -47,10 +49,9 @@ export class SettingManager {
 	public static getSetting(vendor: string, key: string): any {
 		const setting = this.CACHE_SETTING[vendor];
 		if (setting && typeof setting === 'object' && key in setting) {
-			return (setting as any)[key];
+			return setting[key];
 		}
-		return null;
-
+		throw new Error(`Unknown setting ${key}`);
 	}
 
 	/**
@@ -59,15 +60,14 @@ export class SettingManager {
 	 * @param key
 	 * @param value
 	 */
-	public static async saveSetting(vendor: VendorType, key: string, value: any): Promise<void> {
-		const setting = this.postBridgePluginSettingMap.get(vendor);
+	public static async saveSetting(vendor: string, key: string, value: any): Promise<void> {
+		const setting = this.CACHE_SETTING[vendor];
 		if (setting && typeof setting === 'object' && key in setting) {
 			(setting as any)[key] = value;
 		}else {
 			throw new Error(`Setting ${key} not found in vendor ${vendor}`);
 		}
-		debugger
-		await PostBridgePlugin.getInstance().saveData(this.postBridgePluginSettingMap);
+		await PostBridgePlugin.getInstance().saveData(this.CACHE_SETTING);
 	}
 
 }

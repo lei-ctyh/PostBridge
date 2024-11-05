@@ -2,10 +2,13 @@ import {App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Sett
 
 import {SettingManager} from './src/settings/setting-manager';
 import {PbSettingTab} from "./src/settings/settingtab";
+import {register} from "./src/events/register";
 
 export default class PostBridgePlugin extends Plugin {
 	async onload() {
 		this.initPlugin();
+		// 注册指令到右键的文件菜单
+		this.registerEvent(register());
 	}
 
 	onunload() {

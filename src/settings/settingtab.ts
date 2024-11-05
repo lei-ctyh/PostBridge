@@ -1,6 +1,6 @@
-import {App, PluginSettingTab, Setting, TFolder} from "obsidian";
+import {App, Notice, PluginSettingTab, Setting, TFolder} from "obsidian";
 import PostBridgePlugin from "../../main";
-import {SettingManager, VendorType} from "./setting-manager";
+import {SettingManager} from "./setting-manager";
 
 export class PbSettingTab extends PluginSettingTab {
 	private plugin: PostBridgePlugin;
@@ -13,63 +13,77 @@ export class PbSettingTab extends PluginSettingTab {
 	display(): void {
 		const {containerEl: contentEl} = this;
 		contentEl.empty();
-		new Setting(contentEl)
-			.setName('blog_url')
-			.setDesc('博客园MetaWeblog访问地址')
-			.addText(text => text
-				.setPlaceholder('MetaWeblog访问地址')
-				.setValue(SettingManager.getSetting(VendorType.CNBLOG, 'blog_url'))
-				.onChange(async (value) => {
-					await SettingManager.saveSetting(VendorType.CNBLOG, 'blog_url', value);
-				}));
-		new Setting(contentEl)
-			.setName('username')
-			.setDesc('MetaWeblog登录名')
-			.addText(text => text
-				.setPlaceholder('MetaWeblog登录名')
-				.setValue("")
-				.onChange(async (value) => {
-				}));
-		new Setting(contentEl)
-			.setName('password')
-			.setDesc('MetaWeblog访问令牌')
-			.addText(text => text
-				.setPlaceholder('MetaWeblog访问令牌')
-				.setValue("")
-				.onChange(async (value) => {
-				}));
-
+		contentEl.createEl("h6", {text: "基础设置"})
+		const basicDivElement = contentEl.createDiv();
 		// 获取所有文章目录
 		let all_dir = this.app.vault.getAllLoadedFiles().filter((file) => file instanceof TFolder);
-		new Setting(contentEl)
-			.setName('location_posts')
-			.setDesc('同步文章目录')
-			.setTooltip('同步文章目录, 默认是所有文章')
+		new Setting(basicDivElement)
+			.setName('同步文章目录')
+			.setDesc('选择文章目录，同步文章时将只上传该目录下的文章')
 			.addDropdown(dropdown => {
 				dropdown.selectEl.style.width = "165px";
 				all_dir.forEach((dir) => {
 					dropdown.addOption(dir.path, dir.path);
 				})
-				dropdown.setValue("")
+				dropdown.setValue(SettingManager.getSetting('base', 'location_posts'))
 				dropdown.onChange(async (value) => {
+					await SettingManager.saveSetting('base', 'location_posts', value);
 				})
 			});
 
-		new Setting(contentEl)
-			.setName('throttling_mode')
-			.setDesc('节流模式')
+		new Setting(basicDivElement)
+			.setName('节流模式')
+			.setDesc('启用节流模式后，文章中的图片会根据一定的规则进行上传，节省接口调用次数')
 			.addToggle(toggle => toggle
-				.setTooltip('节流后, 已上传图片不会再上传, 节省接口调用次数')
-				.setValue(true)
+				.setValue(SettingManager.getSetting('base', 'throttling_mode'))
 				.onChange(async (value) => {
-
+					await SettingManager.saveSetting('base', 'throttling_mode', value);
 				}))
 
-
-
-		const contentDiv = contentEl.createEl("div");
-		contentDiv.style.display = "flex";
-		contentDiv.style.paddingTop = '15px';
-		contentDiv.style.borderTop = "1px solid #e6e6e6";
+		const cnblogDivElement = contentEl.createDiv();
+		cnblogDivElement.createEl("h6", {text: "博客园"})
+		cnblogDivElement.style.marginTop = "20px";
+		new Setting(cnblogDivElement)
+			.setName('博客园同步')
+			.setDesc('启用后，文章将同步到博客园')
+			.addToggle(toggle => toggle
+				.setValue(SettingManager.getSetting('cnblog', 'enable'))
+				.onChange(async (value) => {
+					await SettingManager.saveSetting('cnblog', 'enable', value);
+				}));
+		new Setting(cnblogDivElement)
+			.setName('测试链接')
+			.setDesc('测试博客园MetaWeblog的链接是否可用')
+			.addButton(button => button
+				.setButtonText('测试')
+				.onClick(async () => {
+					new Notice('正在测试博客园MetaWeblog的链接可用性...')
+				})
+			);
+		new Setting(cnblogDivElement)
+			.setName('MetaWeblog访问地址')
+			.addText(text => text
+				.setPlaceholder('MetaWeblog访问地址')
+				.setValue(SettingManager.getSetting('cnblog', 'blog_url'))
+				.onChange(async (value) => {
+					await SettingManager.saveSetting('cnblog', 'blog_url', value);
+				}));
+		new Setting(cnblogDivElement)
+			.setName('MetaWeblog登录名')
+			.addText(text => text
+				.setPlaceholder('MetaWeblog登录名')
+				.setValue(SettingManager.getSetting('cnblog', 'username'))
+				.onChange(async (value) => {
+					await SettingManager.saveSetting('cnblog', 'username', value);
+				}));
+		new Setting(cnblogDivElement)
+			.setName('MetaWeblog访问令牌')
+			.addText(text => text
+				.setPlaceholder('MetaWeblog访问令牌')
+				.setValue(SettingManager.getSetting('cnblog', 'password'))
+				.onChange(async (value) => {
+					await SettingManager.saveSetting('cnblog', 'password', value);
+				})
+				.inputEl.type = "password");
 	}
 }
