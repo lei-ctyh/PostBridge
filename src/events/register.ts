@@ -5,7 +5,7 @@ import {TFile} from "obsidian";
 /**
  * 文章右键上传事件
  */
-export const register = () => {
+export const rightClickToUpload = () => {
 	return PostBridgePlugin.getInstance().app.workspace.on("file-menu", (menu, file) => {
 		// 判断文件是否在同步目录下
 		let location_posts = SettingManager.getSetting('base', 'location_posts')

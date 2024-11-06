@@ -1,14 +1,17 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, SettingTab} from 'obsidian';
+import {
+	Plugin,
+} from 'obsidian';
 
 import {SettingManager} from './src/settings/setting-manager';
 import {PbSettingTab} from "./src/settings/settingtab";
-import {register} from "./src/events/register";
+import {rightClickToUpload} from "./src/events/register";
 
 export default class PostBridgePlugin extends Plugin {
+	private static instance: PostBridgePlugin;
 	async onload() {
 		this.initPlugin();
 		// 注册指令到右键的文件菜单
-		this.registerEvent(register());
+		this.registerEvent(rightClickToUpload());
 	}
 
 	onunload() {
@@ -24,7 +27,7 @@ export default class PostBridgePlugin extends Plugin {
 		this.addSettingTab(new PbSettingTab(this.app, this));
 	}
 
-	private static instance: PostBridgePlugin;
+
 	public static getInstance(): PostBridgePlugin {
 		if (!PostBridgePlugin.instance) {
 			throw new Error('PostBridgePlugin is not initialized yet');
